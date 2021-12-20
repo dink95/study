@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/MSA/eureka/eureka.iml" filepath="$PROJECT_DIR$/MSA/eureka/eureka.iml" />
+      <module fileurl="file://$PROJECT_DIR$/MSA/gateway/gateway.iml" filepath="$PROJECT_DIR$/MSA/gateway/gateway.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/study.iml" filepath="$PROJECT_DIR$/.idea/study.iml" />
       <module fileurl="file://$PROJECT_DIR$/MSA/user/user.iml" filepath="$PROJECT_DIR$/MSA/user/user.iml" />
     </modules>
