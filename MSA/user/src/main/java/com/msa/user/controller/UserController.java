@@ -1,6 +1,7 @@
 package com.msa.user.controller;
 
 import com.msa.user.DTO.UserDto;
+import com.msa.user.jpa.UserEntity;
 import com.msa.user.service.UserService;
 import com.msa.user.vo.RequestUser;
 import com.msa.user.vo.ResponseUser;
@@ -12,8 +13,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
-@RequestMapping("/")
+@RequestMapping("/user-service")
 public class UserController {
 
     private Environment env;//environment 사용한 불러오기
@@ -54,6 +58,27 @@ public class UserController {
 
     }
 
+    @GetMapping("/users")
+    public ResponseEntity<List<ResponseUser>> getUsers(){
+
+        Iterable<UserEntity> userList = userService.getUserByAll();
+        List<ResponseUser> list= new ArrayList<>();
+
+        userList.forEach(v->{
+            list.add(new ModelMapper().map(v,ResponseUser.class));
+        });
+        return ResponseEntity.status(HttpStatus.OK).body(list);
+    }
+
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<ResponseUser> getUser(@PathVariable("userId")String userId){
+
+        UserDto userDto = userService.getUserByUserId(userId);
+
+        ResponseUser responseUser = new ModelMapper().map(userDto,ResponseUser.class);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseUser);
+    }
 
 
 
