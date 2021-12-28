@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/MSA/catalog/catalog.iml" filepath="$PROJECT_DIR$/MSA/catalog/catalog.iml" />
       <module fileurl="file://$PROJECT_DIR$/MSA/eureka/eureka.iml" filepath="$PROJECT_DIR$/MSA/eureka/eureka.iml" />
       <module fileurl="file://$PROJECT_DIR$/MSA/gateway/gateway.iml" filepath="$PROJECT_DIR$/MSA/gateway/gateway.iml" />
+      <module fileurl="file://$PROJECT_DIR$/MSA/order/order.iml" filepath="$PROJECT_DIR$/MSA/order/order.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/study.iml" filepath="$PROJECT_DIR$/.idea/study.iml" />
       <module fileurl="file://$PROJECT_DIR$/MSA/user/user.iml" filepath="$PROJECT_DIR$/MSA/user/user.iml" />
     </modules>
