@@ -12,8 +12,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.servlet.Filter;
 
-@Configuration
-public class WebSecurity  extends WebSecurityConfigurerAdapter {
+//@Configuration
+public class WebSecurity   {
 
 
     private UserService userService;

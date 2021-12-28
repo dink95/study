@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+public class AuthenticationFilter  {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
