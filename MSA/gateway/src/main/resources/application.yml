@@ -15,10 +15,33 @@ spring:
     gateway:
       routes:
         - id: user-service
-          uri: lb://user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/login
+            - Method=POST
+          filter:
+            - RewritePath=/user-service/(?<path>.*),/$\{path}
+            - RemoveRequestHeader=Cookie
+        - id: user-service
+          uri: lb://USER-SERVICE
           predicates:
             - Path=/user-service/**
+            - Method=GET
+          filter:
+            - RewritePath=/user-service/(?<path>.*),/$\{path}
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/users
+            - Method=POST
+          filter:
+            - RewritePath=/user-service/(?<path>.*),/$\{path}
+            - RemoveRequestHeader=Cookie
         - id: catalog-service
           uri: lb://catalog-service
           predicates:
-            - Path=/user-service/**
+            - Path=/catalog-service/**
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/order-service/**

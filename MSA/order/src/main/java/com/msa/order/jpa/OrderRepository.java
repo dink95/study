@@ -7,5 +7,4 @@ public interface OrderRepository extends CrudRepository<OrderEntity,Long> {
 
     Iterable<OrderEntity> findByUserId(String userId);
 
-
 }
