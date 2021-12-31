@@ -9,15 +9,17 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/user-service")
 public class UserController {
 
     private Environment env;//environment 사용한 불러오기
@@ -32,8 +34,9 @@ public class UserController {
     }
 
     @GetMapping("/welcome")
-    public String welcome(){
-        return env.getProperty("greeting.message");
+    public String welcome(HttpServletRequest request){
+
+        return request.getRemoteAddr();
     }
 
     @GetMapping("/health_check")
