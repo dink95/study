@@ -1,10 +1,17 @@
 package com.msa.user.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.msa.user.DTO.UserDto;
+import com.msa.user.service.UserService;
 import com.msa.user.vo.RequestLogin;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.core.env.Environment;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.FilterChain;
@@ -13,8 +20,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class AuthenticationFilter extends  UsernamePasswordAuthenticationFilter{
+
+    private UserService userService;
+    private Environment env;
+
+    public AuthenticationFilter(AuthenticationManager authenticationManager,
+                                UserService userService,
+                                Environment env) {
+        super.setAuthenticationManager(authenticationManager);
+        this.userService = userService;
+        this.env = env;
+    }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
@@ -42,6 +61,16 @@ public class AuthenticationFilter extends  UsernamePasswordAuthenticationFilter{
                                             FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
 
-        //성공 시, 어떤 반환이나 작업을 할 것인지
+        String userName = ((User)authResult.getPrincipal()).getUsername();
+        UserDto userDetails = userService.getUserDetailsByEmail(userName);
+        String token = Jwts.builder()
+                .setSubject(userDetails.getUserId())
+                .setExpiration(new Date(System.currentTimeMillis() +
+                        Long.parseLong(env.getProperty("token.expiration_time"))))
+                .signWith(SignatureAlgorithm.HS512, env.getProperty("token.secret"))
+                .compact();
+
+        response.addHeader("token", token);
+        response.addHeader("userId", userDetails.getUserId());
     }
 }
