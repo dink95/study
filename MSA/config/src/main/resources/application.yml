@@ -9,4 +9,4 @@ spring:
     config:
       server:
         git:
-          uri: file://C:\Users\manbou\Documents\GitHub\study\MSA\git-local-repo
+          uri: file://C:\Users\manbou\Documents\GitHub\spring-config
