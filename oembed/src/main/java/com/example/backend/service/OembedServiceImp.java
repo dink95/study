@@ -93,7 +93,7 @@ public class OembedServiceImp implements OembedService {
         Map<String, Object> embedResult = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
 
-        // 인스타그램 포스트 확인
+
         boolean isInstagramPost = Pattern.compile("(https://www.instagram.com/p/.*?)").matcher(paramUrl).find();
         if (!isInstagramPost) {
             result.put("result", "Fail");
@@ -134,6 +134,8 @@ public class OembedServiceImp implements OembedService {
     }
 
 
+    /* 틱톡은 web page 공유하기로만 가능!
+    * https://developers.tiktok.com/doc/embed-videos */
     private HttpEntity<Map<String, Object>> getTiktokHTML(String paramUrl) {
         Map<String, Object> embedResult = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
