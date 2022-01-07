@@ -16,20 +16,19 @@ import java.util.regex.Pattern;
 @Service
 public class OembedServiceImp implements OembedService {
 
-    //token값 필요
+    //token값 필요 하루 500개 제한!
     private final static String FACEBOOKURL = "https://www.facebook.com/plugins/post/oembed.json/?url=";
-    private final static String INSTAGRAMURL = "https://api.instagram.com/oembed?url=";
+
 
     //가능
+    private final static String INSTAGRAMURL = "https://api.instagram.com/oembed?url=";
     private final static String TWITTERURL = "https://publish.twitter.com/oembed?url=";
     private final static String TIKTOKURL = "https://www.tiktok.com/oembed?url=";
-
-    //가능
     private final static String YOUTUBEURL = "https://www.youtube.com/oembed?url=";
 
 
 
-    public HttpEntity<Map<String, Object>> callEmbedProcess(String url) {
+    public ResponseEntity<Map<String, Object>> callEmbedProcess(String url) {
         Map<String, Object> result = new HashMap<>();
 
         if (url.contains("instagram")) {
@@ -51,15 +50,13 @@ public class OembedServiceImp implements OembedService {
     }
 
 
-    private HttpEntity<Map<String, Object>> getFacebookHTML(String paramUrl) {
+    private ResponseEntity<Map<String, Object>> getFacebookHTML(String paramUrl) {
         Map<String, String> embedResult = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
 
-        // 정규표현식을 사용해 Facebook이 Embed를 지원하는 URL인지 확인
         boolean isFacebookPost = Pattern.compile("https://www.facebook.com/.*?/(posts|photos|videos)/.*?")
                 .matcher(paramUrl).find();
 
-        // 지원하지 않는 URL은 실패 처리
         if (!isFacebookPost) {
             result.put("result", "Fail");
             result.put("response", "지원하지 않는 형식의 Facebook URL 입니다.");
@@ -89,7 +86,8 @@ public class OembedServiceImp implements OembedService {
     }
 
 
-    private HttpEntity<Map<String, Object>> getInstagramHTML(String paramUrl) {
+    /* https://developers.facebook.com/docs/instagram/oembed-legacy/?locale=ko_KR */
+    private ResponseEntity<Map<String, Object>> getInstagramHTML(String paramUrl) {
         Map<String, Object> embedResult = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
 
@@ -111,7 +109,7 @@ public class OembedServiceImp implements OembedService {
     }
 
 
-    private HttpEntity<Map<String, Object>> getTwitterHTML(String paramUrl) {
+    private ResponseEntity<Map<String, Object>> getTwitterHTML(String paramUrl) {
         Map<String, Object> embedResult = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
 
@@ -136,7 +134,7 @@ public class OembedServiceImp implements OembedService {
 
     /* 틱톡은 web page 공유하기로만 가능!
     * https://developers.tiktok.com/doc/embed-videos */
-    private HttpEntity<Map<String, Object>> getTiktokHTML(String paramUrl) {
+    private ResponseEntity<Map<String, Object>> getTiktokHTML(String paramUrl) {
         Map<String, Object> embedResult = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
 
@@ -158,7 +156,7 @@ public class OembedServiceImp implements OembedService {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    private HttpEntity<Map<String, Object>> getYouTubeHTML(String paramUrl) {
+    private ResponseEntity<Map<String, Object>> getYouTubeHTML(String paramUrl) {
         Map<String, Object> embedResult = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
 
