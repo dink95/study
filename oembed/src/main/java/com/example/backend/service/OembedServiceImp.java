@@ -1,14 +1,12 @@
 package com.example.backend.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import com.example.backend.dto.EmbedDto;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -16,8 +14,10 @@ import java.util.regex.Pattern;
 @Service
 public class OembedServiceImp implements OembedService {
 
-    //token값 필요 하루 500개 제한!
-    private final static String FACEBOOKURL = "https://www.facebook.com/plugins/post/oembed.json/?url=";
+
+    private final static String FACEBOOKPAGE = "https://graph.facebook.com/v12.0/oembed_page?url=";
+    private final static String FACEBOOKPOST = "https://graph.facebook.com/v12.0/oembed_post?url=";
+    private final static String FACEBOOKVIDEO = "https://graph.facebook.com/v12.0/oembed_video?url=";
 
 
     //가능
@@ -27,15 +27,15 @@ public class OembedServiceImp implements OembedService {
     private final static String YOUTUBEURL = "https://www.youtube.com/oembed?url=";
 
 
+    @Autowired
+    RestTemplate restTemplate;
 
     public ResponseEntity<Map<String, Object>> callEmbedProcess(String url) {
         Map<String, Object> result = new HashMap<>();
 
         if (url.contains("instagram")) {
             return getInstagramHTML(url);
-        } else if (url.contains("facebook")) {
-            return getFacebookHTML(url);
-        } else if (url.contains("twitter")) {
+        }  else if (url.contains("twitter")) {
             return getTwitterHTML(url);
         } else if (url.contains("tiktok")) {
             return getTiktokHTML(url);
@@ -50,49 +50,14 @@ public class OembedServiceImp implements OembedService {
     }
 
 
-    private ResponseEntity<Map<String, Object>> getFacebookHTML(String paramUrl) {
-        Map<String, String> embedResult = new HashMap<>();
-        Map<String, Object> result = new HashMap<>();
-
-        boolean isFacebookPost = Pattern.compile("https://www.facebook.com/.*?/(posts|photos|videos)/.*?")
-                .matcher(paramUrl).find();
-
-        if (!isFacebookPost) {
-            result.put("result", "Fail");
-            result.put("response", "지원하지 않는 형식의 Facebook URL 입니다.");
-            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
-        }
-
-        // 지원하는 URL이 판단되면 API를 통해 HTML을 받아온다.
-        RestTemplate template = new RestTemplate();
-        String embedResponse = template.getForObject(FACEBOOKURL + paramUrl, String.class);
-
-
-        // 페이스북의 경우 text 형태로 값을 리턴하기에 jackson을 사용하여 다시 Map으로 만들어준다.
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            embedResult = mapper.readValue(embedResponse, new TypeReference<Map<String, String>>(){});
-        } catch (IOException e) {
-            e.printStackTrace();
-            result.put("result", "Fail");
-            result.put("response", "지원하지 않는 형식의 Facebook URL 입니다.");
-            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
-        }
-
-        result.put("result", "success");
-        result.put("response", embedResult.get("html"));
-
-        return new ResponseEntity<>(result, HttpStatus.OK);
-    }
-
 
     /* https://developers.facebook.com/docs/instagram/oembed-legacy/?locale=ko_KR */
-    private ResponseEntity<Map<String, Object>> getInstagramHTML(String paramUrl) {
+    private ResponseEntity<Map<String, Object>> getInstagramHTML(String url) {
         Map<String, Object> embedResult = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
 
 
-        boolean isInstagramPost = Pattern.compile("(https://www.instagram.com/p/.*?)").matcher(paramUrl).find();
+        boolean isInstagramPost = Pattern.compile("(https://www.instagram.com/p/.*?)").matcher(url).find();
         if (!isInstagramPost) {
             result.put("result", "Fail");
             result.put("response", "지원하지 않는 형식의 Instagram URL 입니다.");
@@ -100,8 +65,7 @@ public class OembedServiceImp implements OembedService {
         }
 
         // API 요청
-        RestTemplate template = new RestTemplate();
-        embedResult = template.getForObject(INSTAGRAMURL + paramUrl, Map.class);
+        embedResult = restTemplate.getForObject(INSTAGRAMURL + url, Map.class);
         result.put("result", "success");
         result.put("response", embedResult.get("html"));
 
@@ -109,12 +73,12 @@ public class OembedServiceImp implements OembedService {
     }
 
 
-    private ResponseEntity<Map<String, Object>> getTwitterHTML(String paramUrl) {
+    private ResponseEntity<Map<String, Object>> getTwitterHTML(String url) {
         Map<String, Object> embedResult = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
 
         // 트위터 포스트 확인
-        boolean isTwitterPost = Pattern.compile("(https://twitter.com/.*/status/.*?)").matcher(paramUrl).find();
+        boolean isTwitterPost = Pattern.compile("(https://twitter.com/.*/status/.*?)").matcher(url).find();
         if (!isTwitterPost) {
             result.put("result", "Fail");
             result.put("response", "지원하지 않는 형식의 Twitter URL 입니다.");
@@ -123,7 +87,7 @@ public class OembedServiceImp implements OembedService {
 
         // API 요청
         RestTemplate template = new RestTemplate();
-        embedResult = template.getForObject(TWITTERURL + paramUrl, Map.class);
+        embedResult = template.getForObject(TWITTERURL + url, Map.class);
 
         result.put("result", "success");
         result.put("response", embedResult.get("html"));
@@ -134,21 +98,21 @@ public class OembedServiceImp implements OembedService {
 
     /* 틱톡은 web page 공유하기로만 가능!
     * https://developers.tiktok.com/doc/embed-videos */
-    private ResponseEntity<Map<String, Object>> getTiktokHTML(String paramUrl) {
+    private ResponseEntity<Map<String, Object>> getTiktokHTML(String url) {
         Map<String, Object> embedResult = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
 
         // 틱톡 포스트 확인
-        boolean isTiktokPost = Pattern.compile("(https://www.tiktok.com/.*/video/.*?)").matcher(paramUrl).find();
+        boolean isTiktokPost = Pattern.compile("(https://www.tiktok.com/.*/video/.*?)").matcher(url).find();
         if (!isTiktokPost) {
             result.put("result", "Fail");
-            result.put("response", "지원하지 않는 형식의 Instagram URL 입니다.");
+            result.put("response", "지원하지 않는 형식의 Tiktok URL 입니다.");
             return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
         }
 
         // API 요청
-        RestTemplate template = new RestTemplate();
-        embedResult = template.getForObject(TIKTOKURL + paramUrl, Map.class);
+
+        embedResult = restTemplate.getForObject(TIKTOKURL + url, Map.class);
 
         result.put("result", "success");
         result.put("response", embedResult.get("html"));
@@ -156,21 +120,20 @@ public class OembedServiceImp implements OembedService {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    private ResponseEntity<Map<String, Object>> getYouTubeHTML(String paramUrl) {
+    private ResponseEntity<Map<String, Object>> getYouTubeHTML(String url) {
         Map<String, Object> embedResult = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
 
-        System.out.println(paramUrl);
-        boolean isYouTubePost = Pattern.compile("(https://www.youtube.com/.*?)").matcher(paramUrl).find();
+
+        boolean isYouTubePost = Pattern.compile("(https://www.youtube.com/.*?)").matcher(url).find();
         if (!isYouTubePost) {
             result.put("result", "Fail");
             result.put("response", "지원하지 않는 형식의 YOUTUBE URL 입니다.");
             return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
         }
 
-        // API 요청
-        RestTemplate template = new RestTemplate();
-        embedResult = template.getForObject(YOUTUBEURL + paramUrl, Map.class);
+
+        embedResult = restTemplate.getForObject(YOUTUBEURL + url, Map.class);
 
         result.put("result", "success");
         result.put("response", embedResult.get("html"));
@@ -178,6 +141,50 @@ public class OembedServiceImp implements OembedService {
         return new ResponseEntity<>(result, HttpStatus.OK);
 
 
+    }
+
+     public ResponseEntity<Map<String, Object>> getFacebookHTML(String url, String type) {
+        Map<String, String> embedResult = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
+
+        String embedResponse;
+        if(type.equals("post")) {
+            embedResponse = restTemplate.getForObject(FACEBOOKPOST + url + "&access_token=사용자 지정토큰",
+                    String.class);
+        }else if(type.equals("video")){
+             embedResponse = restTemplate.getForObject(FACEBOOKVIDEO + url + "&access_token=사용자 지정토큰",
+                    String.class);
+        }else{
+             embedResponse = restTemplate.getForObject(FACEBOOKPAGE + url + "&access_token=사용자 지정토큰",
+                    String.class);
+        }
+
+        result.put("result", "success");
+        result.put("response", embedResult.get("html"));
+
+        HttpHeaders headers =new HttpHeaders();
+        headers.add("Authorization","Bearer "+"사용자토큰");
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    public EmbedDto callEmbedData(String url) {
+
+
+
+        EmbedDto dto = new EmbedDto();
+        if (url.contains("instagram")) {
+             dto = restTemplate.getForObject(INSTAGRAMURL + url,EmbedDto.class);
+        }  else if (url.contains("twitter")) {
+             dto = restTemplate.getForObject(TWITTERURL + url,EmbedDto.class);
+        } else if (url.contains("tiktok")) {
+             dto = restTemplate.getForObject(TIKTOKURL + url,EmbedDto.class);
+        }else if(url.contains("youtube")) {
+             dto = restTemplate.getForObject(YOUTUBEURL + url,EmbedDto.class);
+        }else {
+             dto = null;
+        }
+
+        return dto;
     }
 
 

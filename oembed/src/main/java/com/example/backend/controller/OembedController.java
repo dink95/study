@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.EmbedDto;
 import com.example.backend.service.OembedService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,16 @@ public class OembedController {
     @GetMapping("/site")
     public ResponseEntity<Map<String,Object>> oEmbed(@RequestParam(value = "url") String url){
 
-        return (ResponseEntity<Map<String, Object>>) service.callEmbedProcess(url);
+        if(url.contains("facebook"))
+            return service.getFacebookHTML(url,"type");
+
+        return  service.callEmbedProcess(url);
+    }
+
+    @GetMapping("/api")
+    public EmbedDto getEmbedData(@RequestParam(value = "url") String url){
+
+        return service.callEmbedData(url);
     }
 
 }
