@@ -6,11 +6,16 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="hello-jpa" />
+        <module name="jpa" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="hello-jpa" target="11" />
+      <module name="jpa" target="11" />
     </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="jpa" options="-parameters" />
+    </option>
   </component>
 </project>
