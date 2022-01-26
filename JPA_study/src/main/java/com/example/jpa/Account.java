@@ -1,9 +1,9 @@
 package com.example.jpa;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "account")
@@ -12,9 +12,17 @@ public class Account {
     @Id @GeneratedValue
     private Long id;
 
+    @Column(nullable = false,unique = true)
     private String name;
 
     private String password;
+
+
+
+    @OneToMany(mappedBy = "account")
+    Set<Study> studies = new HashSet<>();
+
+
 
     public Long getId() {
         return id;
